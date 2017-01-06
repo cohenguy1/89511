@@ -7,7 +7,7 @@ number_of_iterations = 1000
 learning_rate = 0.1
 regularization_parameter = 0.5
 
-validation_size = 1
+validation_size = 200
 
 dataset_path = sys.argv[1]
 
