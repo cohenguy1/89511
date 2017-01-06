@@ -1,0 +1,4 @@
+output1: 1.0 -40.0 43.0
+output2: 13
+output3: 3
+output5: 13924.0

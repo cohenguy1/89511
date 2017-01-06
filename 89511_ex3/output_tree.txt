@@ -1,0 +1,25 @@
+windy  
+|-FALSE  
+	|-outlook  
+		|-sunny  
+			|-temperature  
+				|-hot  
+					|-no  
+				|-mild  
+					|-no  
+				|-cool  
+					|-yes  
+		|-overcast  
+			|-yes  
+		|-rainy  
+			|-yes  
+|-TRUE  
+	|-humidity  
+		|-high  
+			|-no  
+		|-normal  
+			|-outlook  
+				|-sunny  
+					|-yes  
+				|-rainy  
+					|-no  
