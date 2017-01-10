@@ -1,27 +1,27 @@
 import sys
 import numpy as np
 
-dataset_path = sys.argv[1]
+print_to_stdout = False
+if len(sys.argv) > 3:
+    print_to_stdout = True
+
+test_path = sys.argv[1]
 weights_path = sys.argv[2]
 
-validation_size = 200
 
-data = np.loadtxt(dataset_path, delimiter = ',')
+data = np.loadtxt(test_path, delimiter = ',')
 w = np.loadtxt(weights_path, delimiter = ',')
 
-Y = data[:, -1]
-X = data[:, :-1]
-X /= np.linalg.norm(X, axis=0)
+Y_test = data[:, -1]
+X_test = data[:, :-1]
+X_test /= np.linalg.norm(X_test, axis=0)
 
-# Split the data into training/validation sets
-X_train = X[:-validation_size]
-X_test = X[-validation_size:]
-
-# Split the targets into training/validation sets
-Y_train = Y[:-validation_size]
-Y_test = Y[-validation_size:]
-
-with open('predictions.txt', 'w') as predictions_file:
-    for i in range(validation_size):
+if print_to_stdout:
+    for i in range(len(X_test)):
         prediction = np.dot(X_test[i], w)
-        predictions_file.write(str(prediction) + '\n')
+        print(str(prediction))
+else:
+    with open('predictions.txt', 'w') as predictions_file:
+        for i in range(len(X_test)):
+            prediction = np.dot(X_test[i], w)
+            predictions_file.write(str(prediction) + '\n')
