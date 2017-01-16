@@ -9,33 +9,41 @@ regularization_parameter = 0.5
 
 dataset_path = sys.argv[1]
 
+validation_size = 200
+
 data = np.loadtxt(dataset_path, delimiter = ',')
 
-Y_train = data[:, -1]
-X_train = data[:, :-1]
-X_train /= np.linalg.norm(X_train, axis=0)
+Y = data[:, -1]
+X = data[:, :-1]
+X /= np.linalg.norm(X, axis=0)
+
+# Split the data into training/validation sets
+X_train_raw = X[:-validation_size]
+X_test_raw = X[-validation_size:]
+
+# Split the targets into training/validation sets
+Y_train = Y[:-validation_size]
+Y_test = Y[-validation_size:]
+
+X_train = []
+for sample in X_train_raw:
+    X_train.append(np.append(1, sample))
 
 m = len(X_train)
 dim = len(X_train[0])
 w = np.zeros(dim)
 
-for t in range(number_of_iterations):
-    total_error = 0
+for epoch in range(number_of_iterations):
+    update_sum = np.zeros(dim)
     for i in range(m):
-        total_error += (np.dot(X_train[i], w) - Y_train[i]) * (np.dot(X_train[i], w) - Y_train[i]) / m
-
-    # print total_error
-
-    new_w = np.zeros(dim)
-    for j in range(dim):
-        update_sum = 0
-        for i in range(m):
-            prediction = np.dot(X_train[i], w)
-            diff = prediction - Y_train[i]
-            update_sum += diff*X_train[i][j]
-        new_w[j] = w[j] * (1 - learning_rate * 2 * regularization_parameter / m) - 2.0 * learning_rate * update_sum / m
+        update_sum += np.dot(np.dot(X_train[i], w) - Y_train[i], X_train[i])
+    new_w = w - 2.0 * learning_rate * update_sum / m - w * learning_rate * 2.0 * regularization_parameter
     w = new_w
 
-with open('weight.txt', 'w') as weights_file:
+weights_file = open('weight.txt', 'w')
+try:
     for j in range(dim):
         weights_file.write(str(w[j]) + '\n')
+        print (str(w[j]))
+finally:
+    weights_file.close()
