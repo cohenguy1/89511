@@ -1,4 +1,10 @@
 import numpy as np
+import math
+
+
+def sigmoid(x):
+    return 1.0 / (1.0 + math.exp(-x))
+
 
 def init_mlp(inputs, targets, nhidden):
     """ Initialize network """
@@ -42,7 +48,24 @@ def loss_and_gradients(input_x, expected_output_y, weights1, weights2):
     #**************************YOUR CODE HERE*********************
     #*************************************************************
     #Write the backpropagation algorithm to find the update values for weights1 and weights2.
+    hidden_activation = np.append(activations[:-1], 1)
+    for k in range(weights2.shape[1]):
+        delta_0_k = (activations[-1] - expected_output_y) * activations[-1] * (1 - activations[-1])
+        for j in range(weights2.shape[0]):
+            weights2_gradient[j][k] = delta_0_k * hidden_activation[j]
 
+
+    for j in range(weights1.shape[1]):
+        sum_output = 0
+        for k in range(weights2.shape[1]):
+            delta_0_k = (activations[-1] - expected_output_y) * activations[-1] * (1 - activations[-1])
+            sum_output += delta_0_k * weights2[j]
+        delta_h_j = activations[j] * (1 - activations[j]) * sum_output
+        for i in range(weights1.shape[0]):
+            weights1_gradient[i][j] = delta_h_j * input_x[i]
+
+    for k in range(weights2.shape[1]):
+        loss += 0.5 * (activations[-1] - expected_output_y[k])**2
 
     #*************************************************************
     #*************************************************************
@@ -76,8 +99,21 @@ def mlpfwd(input_x, weights1, weights2):
 
     #**************************YOUR CODE HERE*********************
     #*************************************************************
+    nhidden = weights1.shape[1]
 
+    # hidden layer outputs
+    for i in range(nhidden):
+        layer_output = np.sum(np.dot(input_x, weights1[:, i]))
+        weighted_outputs.append(layer_output)
+        activations.append(sigmoid(layer_output))
 
+    # output layer
+    input_hidden = np.append(np.asarray(activations), [1])
+    noutput = weights2.shape[1]
+    for i in range(noutput):
+        layer_output = np.sum(np.dot(input_hidden, weights2[:, i]))
+        weighted_outputs.append(layer_output)
+        activations.append(sigmoid(layer_output))
     #*************************************************************
     #*************************************************************
 
@@ -105,12 +141,23 @@ def accuracy_on_dataset(inputs, targets, weights1, weights2):
 
     #**************************YOUR CODE HERE*********************
     #*************************************************************
+    correct_predictions = 0.0
+    nsamples = inputs.shape[0]
+    for i in range(nsamples):
+        weighted_outputs, activations = mlpfwd(inputs[i], weights1, weights2)
 
+        y_hat = 0
+        if activations[-1] >= 0.5:
+            y_hat = 1
 
+        if y_hat == targets[i]:
+            correct_predictions += 1
+
+    accuracy = correct_predictions/nsamples
     #*************************************************************
     #*************************************************************
 
-    return 0
+    return accuracy
 
 
 def mlptrain(inputs, targets, eta, nepochs, weights1, weights2):
