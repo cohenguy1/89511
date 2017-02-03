@@ -48,9 +48,11 @@ def loss_and_gradients(input_x, expected_output_y, weights1, weights2):
     #**************************YOUR CODE HERE*********************
     #*************************************************************
     #Write the backpropagation algorithm to find the update values for weights1 and weights2.
+    ones = np.ones(len(activations[-1]))
     hidden_activation = np.append(activations[:-1], 1)
+    delta_0 = (activations[-1] - expected_output_y) * activations[-1] * (ones - activations[-1])
     for k in range(weights2.shape[1]):
-        delta_0_k = (activations[-1] - expected_output_y) * activations[-1] * (1 - activations[-1])
+        delta_0_k = delta_0[k]
         for j in range(weights2.shape[0]):
             weights2_gradient[j][k] = delta_0_k * hidden_activation[j]
 
@@ -58,14 +60,14 @@ def loss_and_gradients(input_x, expected_output_y, weights1, weights2):
     for j in range(weights1.shape[1]):
         sum_output = 0
         for k in range(weights2.shape[1]):
-            delta_0_k = (activations[-1] - expected_output_y) * activations[-1] * (1 - activations[-1])
-            sum_output += delta_0_k * weights2[j]
-        delta_h_j = activations[j] * (1 - activations[j]) * sum_output
+            delta_0_k = delta_0[k]
+            sum_output += delta_0_k * weights2[j][k]
+        delta_h_j = activations[0][j] * (1 - activations[0][j]) * sum_output
         for i in range(weights1.shape[0]):
             weights1_gradient[i][j] = delta_h_j * input_x[i]
 
     for k in range(weights2.shape[1]):
-        loss += 0.5 * (activations[-1] - expected_output_y[k])**2
+        loss += 0.5 * (activations[-1][k] - expected_output_y[k])**2
 
     #*************************************************************
     #*************************************************************
@@ -101,19 +103,23 @@ def mlpfwd(input_x, weights1, weights2):
     #*************************************************************
     nhidden = weights1.shape[1]
 
+    hidden_activations = []
     # hidden layer outputs
     for i in range(nhidden):
         layer_output = np.sum(np.dot(input_x, weights1[:, i]))
         weighted_outputs.append(layer_output)
-        activations.append(sigmoid(layer_output))
+        hidden_activations.append(sigmoid(layer_output))
+    activations.append(hidden_activations)
 
     # output layer
+    output_activations = []
     input_hidden = np.append(np.asarray(activations), [1])
     noutput = weights2.shape[1]
     for i in range(noutput):
         layer_output = np.sum(np.dot(input_hidden, weights2[:, i]))
         weighted_outputs.append(layer_output)
-        activations.append(sigmoid(layer_output))
+        output_activations.append(sigmoid(layer_output))
+    activations.append(output_activations)
     #*************************************************************
     #*************************************************************
 
@@ -146,11 +152,14 @@ def accuracy_on_dataset(inputs, targets, weights1, weights2):
     for i in range(nsamples):
         weighted_outputs, activations = mlpfwd(inputs[i], weights1, weights2)
 
-        y_hat = 0
-        if activations[-1] >= 0.5:
-            y_hat = 1
+        y_hat = np.zeros(len(activations[-1]))
+        for k in range(len(activations[-1])):
+            if activations[-1][k] >= 0.5:
+                y_hat[k] = 1
+            else:
+                y_hat[k] = 0
 
-        if y_hat == targets[i]:
+        if np.array_equal(y_hat, targets[i]):
             correct_predictions += 1
 
     accuracy = correct_predictions/nsamples
