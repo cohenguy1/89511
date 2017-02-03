@@ -50,7 +50,7 @@ def loss_and_gradients(input_x, expected_output_y, weights1, weights2):
     #Write the backpropagation algorithm to find the update values for weights1 and weights2.
     ones = np.ones(len(activations[-1]))
     hidden_activation = np.append(activations[:-1], 1)
-    delta_0 = (activations[-1] - expected_output_y) * activations[-1] * (ones - activations[-1])
+    delta_0 = np.subtract(activations[-1], expected_output_y) * activations[-1] * (ones - activations[-1])
     for k in range(weights2.shape[1]):
         delta_0_k = delta_0[k]
         for j in range(weights2.shape[0]):
